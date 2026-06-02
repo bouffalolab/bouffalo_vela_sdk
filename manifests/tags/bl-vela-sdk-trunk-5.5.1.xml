@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  bl-vela-sdk-trunk-5.5.1.xml — 冻结发版快照（样例，实际由 release 脚本生成）
+
+  与 bouffalo-vela.xml 的唯一区别：
+    每个 project 的 revision 钉成不可变的【具体 40 位 commit SHA】，
+    而非分支名 / tag 名（tag 可被移动，commit 不会）。
+
+  这样任何人 `repo init -m tags/bl-vela-sdk-trunk-5.5.1.xml` + sync，
+  拿到的代码与发版时 100% bit-for-bit 一致，可复现。
+
+  生成方式：在通过验证的工作树执行 `repo manifest -r -o <此文件>`
+  （-r 会把当前每个 project 的 HEAD 锁成 revision），再改写 remote。
+-->
+<manifest>
+  <remote name="openvela" fetch="https://github.com/open-vela"/>
+  <remote name="bouffalo" fetch="https://github.com/bouffalolab"/>
+  <default remote="openvela" sync-j="8"/>
+
+  <!-- openvela 基座：钉具体 commit（占位 SHA，脚本填真值） -->
+  <project path="nuttx"      name="nuttx"      revision="0000000000000000000000000000000000000000"/>
+  <project path="apps"       name="nuttx-apps" revision="0000000000000000000000000000000000000000"/>
+  <project path="build"      name="build"      revision="0000000000000000000000000000000000000000"/>
+  <project path="external"   name="external"   revision="0000000000000000000000000000000000000000"/>
+  <project path="frameworks" name="frameworks" revision="0000000000000000000000000000000000000000"/>
+  <project path="tests"      name="tests"      revision="0000000000000000000000000000000000000000"/>
+  <project path="vendor"     name="vendor"     revision="0000000000000000000000000000000000000000"/>
+
+  <project path="prebuilts/gcc/linux-x86_64/riscv-none-elf" name="prebuilts_gcc_linux-x86_64_riscv-none-elf" revision="0000000000000000000000000000000000000000" clone-depth="1"/>
+  <project path="prebuilts/build-tools/linux-x86_64"        name="prebuilts_build-tools_linux-x86_64"        revision="0000000000000000000000000000000000000000" clone-depth="1"/>
+  <project path="prebuilts/cmake/linux-x86_64"              name="prebuilts_cmake_linux-x86_64"              revision="0000000000000000000000000000000000000000" clone-depth="1"/>
+  <project path="prebuilts/kconfig-frontends"               name="prebuilts_kconfig-frontends"               revision="0000000000000000000000000000000000000000" clone-depth="1"/>
+
+  <!-- BL 侧：同样钉具体 commit -->
+  <project path="vendor/bouffalolab"          name="vendor_bouffalolab" remote="bouffalo" revision="0000000000000000000000000000000000000000"/>
+  <project path="vendor/bouffalolab/lhal"     name="bl_lhal"            remote="bouffalo" revision="0000000000000000000000000000000000000000"/>
+  <project path="vendor/bouffalolab/wireless" name="bl_wireless"        remote="bouffalo" revision="0000000000000000000000000000000000000000"/>
+  <project path="vendor/bouffalolab/phyrf"    name="bl_phyrf"           remote="bouffalo" revision="0000000000000000000000000000000000000000"/>
+</manifest>

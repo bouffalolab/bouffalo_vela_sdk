@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  bouffalo-vela.xml — BL Vela SDK 开发清单（精简版）
+
+  设计要点：
+  - 只列 BL616/BL618 实际需要的 project，剔除其他厂商 / 未用子系统。
+  - openvela 侧全部钉到 trunk-5.5 tag（基线契约点，与小米 Vela 的同步点）。
+  - BL 侧驱动仓挂在 vendor/bouffalolab 伞下，由 vendor/Make.defs 的
+    $(wildcard vendor/*/Make.defs) 自动纳管，无需改 openvela 任何文件。
+  - wireless / phyrf 在 github 上是“预编译库仓”（方案 A）：仓内是 .a + 头文件，
+    revision 绑定 openvela 基线（基线换工具链必须重编重发）。
+
+  这是“开发清单”。冻结发版时由 release 脚本生成 tags/ 下的快照清单，
+  把每个 project 的 revision 钉成具体 commit 或不可变 tag。
+-->
+<manifest>
+  <!-- ===== Remotes ===== -->
+  <!-- openvela 公开镜像。基线 tag 由小米 Vela 保证与内部一致 -->
+  <remote name="openvela" fetch="https://github.com/open-vela"/>
+  <!-- BL 公开仓（驱动适配层 + 预编译库 + bouffalo_sdk 复用仓） -->
+  <remote name="bouffalo" fetch="https://github.com/bouffalolab"/>
+
+  <!-- 默认跟随 openvela trunk-5.5 基线 tag -->
+  <default remote="openvela" revision="refs/tags/trunk-5.5" sync-j="8"/>
+
+  <!-- ===================================================================
+       基座：openvela 核心（精简集，全部 @trunk-5.5）
+       注意：以下是“起步最小集 + 强相关项”。真实最小闭包需用一个
+       BL616/BL618 defconfig 编一次，按缺失项增删（见 README 收敛流程）。
+       =================================================================== -->
+  <project path="nuttx"      name="nuttx"/>
+  <project path="apps"       name="nuttx-apps"/>
+  <project path="build"      name="build"/>
+  <project path="external"   name="external"/>
+  <project path="frameworks" name="frameworks"/>
+  <project path="tests"      name="tests"/>
+
+  <!-- vendor 伞仓：提供 vendor/Make.defs、CMakeLists.txt 等构建胶水。
+       注意 path=vendor 但只取伞仓本体，不含其他厂商子目录 -->
+  <project path="vendor" name="vendor"/>
+
+  <!-- 工具链 / 构建工具（RISC-V，仅 Linux x86_64）。
+       clone-depth=1 省空间；其他 arch/平台的工具链一律不取 -->
+  <project path="prebuilts/gcc/linux-x86_64/riscv-none-elf" name="prebuilts_gcc_linux-x86_64_riscv-none-elf" clone-depth="1"/>
+  <project path="prebuilts/build-tools/linux-x86_64"        name="prebuilts_build-tools_linux-x86_64" clone-depth="1"/>
+  <project path="prebuilts/cmake/linux-x86_64"              name="prebuilts_cmake_linux-x86_64" clone-depth="1"/>
+  <project path="prebuilts/kconfig-frontends"               name="prebuilts_kconfig-frontends" clone-depth="1"/>
+
+  <!-- ===================================================================
+       BL 适配层 + 复用驱动仓（全部 remote=bouffalo）
+       挂在 vendor/bouffalolab 下，被 vendor/Make.defs 自动纳管。
+       =================================================================== -->
+  <!-- 芯片移植 / 驱动 / board 适配层（源码仓，github 镜像，源在内部 gerrit） -->
+  <project path="vendor/bouffalolab" name="vendor_bouffalolab"
+           remote="bouffalo" revision="refs/tags/bl-vela-sdk-trunk-5.5.1"/>
+
+  <!-- lhal：寄存器级 HAL，OS 无关，源码复用（来自 bouffalo_sdk） -->
+  <project path="vendor/bouffalolab/lhal" name="bl_lhal"
+           remote="bouffalo" revision="refs/tags/lhal-trunk-5.5.1"/>
+
+  <!-- wireless：预编译库仓（.a + 头文件）。revision 绑定 trunk-5.5 基线 -->
+  <project path="vendor/bouffalolab/wireless" name="bl_wireless"
+           remote="bouffalo" revision="refs/tags/wireless-trunk-5.5.1"/>
+
+  <!-- phyrf：预编译库仓（.a + 头文件）。revision 绑定 trunk-5.5 基线 -->
+  <project path="vendor/bouffalolab/phyrf" name="bl_phyrf"
+           remote="bouffalo" revision="refs/tags/phyrf-trunk-5.5.1"/>
+
+</manifest>

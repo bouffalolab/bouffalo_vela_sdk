@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  default.xml — repo init 默认入口
+
+  用法：
+    repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git -b release/trunk-5.5
+    repo sync -j8
+
+  默认指向开发清单。要复现某个发版，改用冻结快照：
+    repo init -u ... -b <tag> -m tags/bl-vela-sdk-trunk-5.5.1.xml
+-->
+<manifest>
+  <include name="bouffalo-vela.xml"/>
+</manifest>
