@@ -108,7 +108,7 @@ freeze_manifest() {
   mkdir -p "${tree}"
   pushd "${tree}" >/dev/null
     # 用刚发布的开发清单同步出完整树
-    repo init -u "${GH_SDK}" -b "release/${OPENVELA_BASELINE}" -m bouffalo-vela.xml
+    repo init -u "${GH_SDK}" -b "release/${OPENVELA_BASELINE}" -m manifests/bl-vela-sdk.xml
     repo sync -j8 --no-clone-bundle
     # -r 把每个 project 的 HEAD 锁成具体 commit，得到可复现快照
     repo manifest -r -o "${sdk}/manifests/tags/bl-vela-sdk-${VERSION}.xml"

@@ -38,6 +38,12 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 > **方案 A**：wireless / phyrf 不公开源码——在 BL 内部用 openvela 同款工具链编成 `.a`，
 > 只把库 + 公开头文件推到 github。详见 §5。
 
+> **⚠️ 现状（与本节"目标态"有差距）**：当前 `manifests/bl-vela-sdk.xml` 是 **openvela
+> trunk 全量基座的镜像**（≈170 个 project），BL 适配层 `vendor/bouffalolab` 仍以注释占位、
+> lhal/wireless/phyrf 尚未接入。本节描述的是接入后的目标拓扑；收敛路径见 §7。
+> 两个 remote 用的是**相对路径**（`../open-vela/`、`../bouffalolab/`），
+> 即 open-vela 与 bouffalolab 必须与本清单仓位于同一 Git host 的同级命名空间下。
+
 ---
 
 ## 3. 版本号语义
@@ -58,17 +64,22 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 
 ### 4.1 开发 / 跟最新（开发清单）
 ```bash
-repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git -b release/trunk-5.5
+repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
+          -b release/trunk-5.5 \
+          -m manifests/bl-vela-sdk.xml
 repo sync -j8
 # 编译（board:config 名以 vendor/bouffalolab/boards 实际为准）
 ./build.sh vendor/bouffalolab/boards/bl616:nsh -j8
 ```
+> 开发清单的 `default revision` 是 `trunk`（跟分支），所以"跟最新"即跟 openvela trunk。
+> **注意现状**：`vendor/bouffalolab` 尚未接入（清单内为注释），上面的 board 路径要等
+> BL 适配层放开后才存在；当前 sync 出来的是 openvela 全量基座树。
 
 ### 4.2 复现某个发版（冻结快照）
 ```bash
 repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
           -b bl-vela-sdk-trunk-5.5.1 \
-          -m tags/bl-vela-sdk-trunk-5.5.1.xml
+          -m manifests/tags/bl-vela-sdk-trunk-5.5.1.xml
 repo sync -j8
 # 此时所有 project 钉死在发版时的具体 commit，bit-for-bit 可复现
 ```
@@ -108,21 +119,25 @@ repo sync -j8
 
 ---
 
-## 7. manifest 最小闭包收敛流程
+## 7. manifest 收敛流程（全量基座 → 最小闭包）
 
-`manifests/bouffalo-vela.xml` 当前是「起步最小集 + 强相关项」，**不是**精确闭包
-（vendor/bouffalolab 板级配置进树后才能定死）。收敛步骤：
+`manifests/bl-vela-sdk.xml` 当前是 **openvela trunk 全量基座的镜像**（≈170 个 project，
+`default revision = trunk`），BL 适配层（`vendor/bouffalolab` + lhal/wireless/phyrf）
+暂以注释占位、尚未接入。先保证「能像上游 openvela 一样 sync + 编」，再逐步收敛。
 
 ```
-1. 放一个 BL616/BL618 的 defconfig
-2. repo sync 当前最小集 → 编译
-3. 报「缺某路径 / 找不到某库」→ 把对应 project 从上游 openvela.xml 抄回本清单
-4. 回到 2，迭代到能干净编出固件
-   → 此时清单里剩的，就是真实最小闭包
+1. 接入 BL 适配层：放开 vendor/bouffalolab 注释，挂上 lhal/wireless/phyrf 仓
+2. 放一个 BL616/BL618 的 defconfig
+3. repo sync 全量 → 编译，记录实际被引用到的 project
+4. 反向裁剪：删掉编译用不到的子系统
+5. 回到 3，迭代到能干净编出固件 → 剩下的就是真实最小闭包
 ```
 
-**已剔除**（确认 BL 不需要）：其他所有 vendor（espressif/xiaomi/infineon+illd/bes/sifli/…）、
-benchmarks、未用的 graphics/interpreters、非 RISC-V 工具链。
+**当前仍保留、待裁剪确认**：vendor/xiaomi 系列、全部 benchmarks、
+未用的 graphics/interpreters、四平台（linux/darwin/windows）工具链
+（gcc/build-tools/cmake，由 `groups="notdefault,platform-*"` 控制按平台拉取）。
+> 早期构想里这份清单是"起步最小集再往上加"，现已反转为"全量基座再往下裁"——
+> 大方向（钉版冻结、可复现、BL 自管主线）不变，只是收敛起点换了。
 
 ---
 
@@ -137,10 +152,11 @@ public 仓 + github 标准 runner = 免费。重型全量编译/测试仍在内�
 
 ```
 manifests/
-  default.xml                       repo init 默认入口
-  bouffalo-vela.xml                 开发清单（跟 trunk-5.5）
+  bl-vela-sdk.xml                   开发清单（openvela trunk 全量基座，BL 层待接入）
   tags/
-    bl-vela-sdk-trunk-5.5.1.xml     冻结快照样例（发版时脚本生成）
+    bl-vela-sdk-trunk-5.5.1.xml     冻结快照样例（发版时脚本生成，钉 refs/tags/trunk-5.5）
 scripts/
   release.sh                        发版自动化（内部→github）
 ```
+> repo init 入口由 `.repo/manifest.xml` 经 `<include name="manifests/bl-vela-sdk.xml"/>`
+> 选定，已无独立的 `default.xml`。
