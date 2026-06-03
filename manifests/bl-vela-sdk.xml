@@ -3,7 +3,7 @@
   <remote name="openvela" fetch="../open-vela/" />
   <remote name="bouffalo" fetch="../bouffalolab/" />
 
-  <default remote="openvela" revision="refs/tags/trunk-5.5" />
+  <default remote="openvela" revision="trunk" />
 
   <!-- openvela base -->
 
