@@ -14,12 +14,12 @@
 |---|---|---|---|
 | OS 基座 | openvela | 小米 Vela | github/open-vela（**trunk-5.5 tag 为同步点**） |
 | **BL Vela SDK** | 基座 + BL 芯片移植/驱动/板级 + 复用驱动 | **Bouffalo Lab（本仓）** | 本仓 + vendor/bl 系列仓 |
-| 产品 | SDK + 业务代码 | 小米 IoT | IoT 内部仓（拉分支作为产品 commit 原点） |
+| 产品 | SDK + 业务代码 | 下游产品团队 | 产品内部仓（拉分支作为产品 commit 原点） |
 
 **职责边界（已与各方约定）**
 - **基线来源**：以 github/open-vela 的 `trunk-5.5` tag 为准。小米 Vela 保证该 tag 与其内部基线等价。
-- **集成清单归属**：最终产品 manifest 由**小米 IoT 拥有**，引用本 SDK 的 vendor tag。本仓的 manifest 仅用于 BL 自家 CI / 发版 / 验证基准。
-- **Review 门禁**：BL **自管主线**（vendor_bouffalolab 等仓）；小米 IoT 仅在采纳某个 SDK tag 进产品时做准入 review。
+- **集成清单归属**：最终产品 manifest 由**下游产品团队拥有**，引用本 SDK 的 vendor tag。本仓的 manifest 仅用于 BL 自家 CI / 发版 / 验证基准。
+- **Review 门禁**：BL **自管主线**（vendor_bouffalolab 等仓）；下游产品团队仅在采纳某个 SDK tag 进产品时做准入 review。
 - **源与分发分离**：源码 + review 在 BL 内部 gerrit；github 是**对外分发镜像**，下游消费方永不接触内部仓。
 
 ---
@@ -73,9 +73,9 @@ repo sync -j8
 # 此时所有 project 钉死在发版时的具体 commit，bit-for-bit 可复现
 ```
 
-### 4.3 小米 IoT 消费（产品侧）
-IoT 在自己的 product manifest 中引用本 SDK 的 vendor tag，叠加业务码后发版。
-本 SDK 的冻结快照可作为 IoT 产品 manifest 的 `<include>` 基底。
+### 4.3 下游产品消费（产品侧）
+产品侧在自己的 product manifest 中引用本 SDK 的 vendor tag，叠加业务码后发版。
+本 SDK 的冻结快照可作为产品 manifest 的 `<include>` 基底。
 
 ---
 
