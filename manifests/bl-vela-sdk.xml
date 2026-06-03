@@ -7,6 +7,8 @@
 
   <!-- openvela base -->
 
+  <project path=".claude" name=".claude" />
+
   <project path="apps" name="nuttx-apps" />
   <project path="apps/benchmarks/coremark/coremark" name="apps_benchmarks_coremark" />
   <project path="apps/benchmarks/test-tlb/test-tlb" name="apps_benchmarks_test-tlb" />
