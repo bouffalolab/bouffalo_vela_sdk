@@ -29,7 +29,7 @@
 ```
 github/open-vela/*                         OS 基座（小米 Vela，trunk-5.5 tag）
 github/bouffalolab/bouffalo_vela_sdk       ← 本仓：manifest + CI + 发版入口
-github/bouffalolab/vendor_bouffalolab      BL 芯片移植/驱动/board 适配层（源码镜像）
+github/bouffalolab/vendor_bouffalolab      BL 适配层：芯片/板级/驱动/中间件/示例/工具（源码镜像）
 github/bouffalolab/bl_lhal                 寄存器级 HAL（源码，复用自 bouffalo_sdk）
 github/bouffalolab/bl_wireless             无线协议栈（★预编译库 .a，方案 A）
 github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，方案 A）
@@ -44,6 +44,24 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 > 本节描述的是接入后的目标拓扑；收敛路径见 §7。
 > 两个 remote 用的是**相对路径**（`../open-vela/`、`../bouffalolab/`），
 > 即 open-vela 与 bouffalolab 必须与本清单仓位于同一 Git host 的同级命名空间下。
+
+### vendor_bouffalolab 内部结构
+
+```
+vendor_bouffalolab/
+├── chips/          芯片移植（custom chip；按 defconfig CONFIG_ARCH_CHIP_CUSTOM_DIR 纳入）
+├── boards/         板级（custom board；按 CONFIG_ARCH_BOARD_CUSTOM_DIR 纳入）
+├── drivers/        驱动 —— 各自独立 .a（顶层 nuttx_add_subdirectory 自动发现）
+├── components/     中间件/可复用组件 —— 各自独立 .a（含"外层包装"导入独立仓，如 lhal）
+├── examples/       示例 app（nuttx_add_application）
+├── tools/          宿主侧脚本/烧录（★无 CMakeLists，不编入固件）
+├── CMakeLists.txt  顶层接入：nuttx_add_subdirectory + Kconfig 菜单 "Bouffalo Lab"
+└── LICENSE         Apache-2.0
+```
+
+> chips/boards 由 kernel/arch 侧按 custom-dir 纳入；drivers/components/examples 由顶层
+> 一层 glob 自动发现；tools 不编入固件。构建走 cmake+Ninja，细节见仓内 `README.md`。
+> 当前为 `bl616cl/bl616cldg` 脚手架（ARM 占位），真实 RISC-V 移植与 lhal/wireless/phyrf 待接入。
 
 ---
 
