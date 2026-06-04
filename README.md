@@ -39,8 +39,9 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 > 只把库 + 公开头文件推到 github。详见 §5。
 
 > **⚠️ 现状（与本节"目标态"有差距）**：当前 `manifests/bl-vela-sdk.xml` 是 **openvela
-> trunk 全量基座的镜像**（≈170 个 project），BL 适配层 `vendor/bouffalolab` 仍以注释占位、
-> lhal/wireless/phyrf 尚未接入。本节描述的是接入后的目标拓扑；收敛路径见 §7。
+> trunk 全量基座的镜像**（≈170 个 project），BL 适配层 `vendor/bouffalolab` 已接入
+> （当前为 `bl616cl/bl616cldg` 脚手架，驱动源码待填充），lhal/wireless/phyrf 尚未接入。
+> 本节描述的是接入后的目标拓扑；收敛路径见 §7。
 > 两个 remote 用的是**相对路径**（`../open-vela/`、`../bouffalolab/`），
 > 即 open-vela 与 bouffalolab 必须与本清单仓位于同一 Git host 的同级命名空间下。
 
@@ -69,11 +70,11 @@ repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
           -m manifests/bl-vela-sdk.xml
 repo sync -j8
 # 编译（board:config 名以 vendor/bouffalolab/boards 实际为准）
-./build.sh vendor/bouffalolab/boards/bl616:nsh -j8
+./build.sh vendor/bouffalolab/boards/bl616cl/bl616cldg:nsh -j8
 ```
 > 开发清单的 `default revision` 是 `trunk`（跟分支），所以"跟最新"即跟 openvela trunk。
-> **注意现状**：`vendor/bouffalolab` 尚未接入（清单内为注释），上面的 board 路径要等
-> BL 适配层放开后才存在；当前 sync 出来的是 openvela 全量基座树。
+> **注意现状**：`vendor/bouffalolab` 已接入，但当前仅为 `bl616cl/bl616cldg` 脚手架
+> （ARM 占位，真实 chip 移植/驱动源码待填充），尚不能直接编出固件；lhal/wireless/phyrf 仍未接入。
 
 ### 4.2 复现某个发版（冻结快照）
 ```bash
@@ -122,11 +123,11 @@ repo sync -j8
 ## 7. manifest 收敛流程（全量基座 → 最小闭包）
 
 `manifests/bl-vela-sdk.xml` 当前是 **openvela trunk 全量基座的镜像**（≈170 个 project，
-`default revision = trunk`），BL 适配层（`vendor/bouffalolab` + lhal/wireless/phyrf）
-暂以注释占位、尚未接入。先保证「能像上游 openvela 一样 sync + 编」，再逐步收敛。
+`default revision = trunk`），BL 适配层中 `vendor/bouffalolab` 已接入（脚手架，`revision`
+继承默认 `trunk`），lhal/wireless/phyrf 仍待挂接。先保证「能像上游 openvela 一样 sync + 编」，再逐步收敛。
 
 ```
-1. 接入 BL 适配层：放开 vendor/bouffalolab 注释，挂上 lhal/wireless/phyrf 仓
+1. 接入 BL 适配层：✅ 已放开 vendor/bouffalolab（bl616cl/bl616cldg 脚手架）；待挂上 lhal/wireless/phyrf 仓
 2. 放一个 BL616/BL618 的 defconfig
 3. repo sync 全量 → 编译，记录实际被引用到的 project
 4. 反向裁剪：删掉编译用不到的子系统
@@ -152,7 +153,7 @@ public 仓 + github 标准 runner = 免费。重型全量编译/测试仍在内�
 
 ```
 manifests/
-  bl-vela-sdk.xml                   开发清单（openvela trunk 全量基座，BL 层待接入）
+  bl-vela-sdk.xml                   开发清单（openvela trunk 全量基座 + vendor/bouffalolab 脚手架）
   tags/
     bl-vela-sdk-trunk-5.5.1.xml     冻结快照样例（发版时脚本生成，钉 refs/tags/trunk-5.5）
 scripts/
