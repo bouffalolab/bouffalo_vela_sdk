@@ -69,8 +69,8 @@ repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
           -b release/trunk-5.5 \
           -m manifests/bl-vela-sdk.xml
 repo sync -j8
-# 编译（board:config 名以 vendor/bouffalolab/boards 实际为准）
-./build.sh vendor/bouffalolab/boards/bl616cl/bl616cldg:nsh -j8
+# 编译（cmake+Ninja；--cmake 缺省即走 Make。路径/配置名以实际为准）
+./build.sh vendor/bouffalolab/boards/bl616cl/bl616cldg/configs/nsh --cmake -j8
 ```
 > 开发清单的 `default revision` 是 `trunk`（跟分支），所以"跟最新"即跟 openvela trunk。
 > **注意现状**：`vendor/bouffalolab` 已接入，但当前仅为 `bl616cl/bl616cldg` 脚手架
