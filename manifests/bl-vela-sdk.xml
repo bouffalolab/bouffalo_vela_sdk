@@ -168,7 +168,10 @@
   <project path="vendor/xiaomi/vela" name="vendor_xiaomi_vela" />
   <project path="vendor/xiaomi/vela/pyxis" name="vendor_xiaomi_pyxis" />
 
+  <!-- bouffalolab base -->
+
   <project path="vendor/bouffalolab" name="vendor_bouffalolab" remote="bouffalo"/>
+  <project path="vendor/bouffalolab/drivers" name="bouffalo_drivers" remote="bouffalo" revision="master" />
 
   <!-- openvela prebuilt gcc bare-metal toolchain -->
   <project path="prebuilts/gcc/linux-x86_64/riscv-none-elf" name="prebuilts_gcc_linux-x86_64_riscv-none-elf" clone-depth="1" groups="notdefault,platform-linux" />
