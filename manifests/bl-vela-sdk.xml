@@ -170,7 +170,10 @@
 
   <!-- bouffalolab base -->
 
-  <project path="vendor/bouffalolab" name="vendor_bouffalolab" remote="bouffalo"/>
+  <project path="vendor/bouffalolab" name="vendor_bouffalolab" remote="bouffalo">
+    <linkfile src=".agents/skills/bl-module-reset" dest=".agents/skills/bl-module-reset" />
+    <linkfile src=".agents/skills/bl-module-reset" dest=".claude/skills/bl-module-reset" />
+  </project>
   <project path="vendor/bouffalolab/drivers" name="bouffalo_drivers" remote="bouffalo" revision="master" />
 
   <!-- openvela prebuilt gcc bare-metal toolchain -->
