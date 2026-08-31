@@ -41,7 +41,7 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 > 只把库 + 公开头文件推到 github。详见 §5。
 
 > **当前状态**：`manifests/bl-vela-sdk.xml` 以 openvela trunk 全量基座为默认来源，
-> `nuttx`/`apps` 显式固定到 Bouffalo Lab public fork 的已验证精确 SHA；BL616CL chip、
+> `nuttx`/`apps` 跟随已合入补丁的 Bouffalo Lab public fork `trunk`；BL616CL chip、
 > Ai-M64L-32S-Kit board、LHAL wrapper 和只读 drivers project 已接入并完成标准构建与
 > 实板回归。无线预编译库仍按具体 SDK 版本独立冻结；收敛路径见 §7。
 > 两个 remote 用的是**相对路径**（`../open-vela/`、`../bouffalolab/`），
@@ -96,9 +96,9 @@ python3 vendor/bouffalolab/bl_build.py build \
   bl616cl/ai-m64l-32s-kit/configs/nsh -j14
 ```
 > 开发清单仍以 openvela `trunk` 作为普通 project 的默认基线；`apps` 和 `nuttx` 例外，
-> 由清单显式固定到 public 的 `bouffalolab/nuttx-apps`、`bouffalolab/nuttx` 精确 SHA，
-> 使 SDK 不被尚未合入的上游 PR 阻塞。每次推进这两个 SHA 都必须重新完成 fresh sync、
-> BL616CL 构建和运行回归。
+> 跟随 public 的 `bouffalolab/nuttx-apps:trunk`、`bouffalolab/nuttx:trunk`。组织主线 PR
+> 合并前必须绑定 fresh sync、BL616CL 构建和受影响能力回归证据，并由非作者 review
+> 核对；required CI checks 建立后再将这些门禁自动化。发布清单才固定精确 SHA。
 >
 > `repo` 为 project checkout 配置 `filter.lfs.*=--skip`，所以 `repo sync` 成功不代表
 > `vendor/bouffalolab` 的 LFS 文件已展开。缺少上述 `git lfs pull` 时，固件后处理工具仍是
@@ -155,7 +155,7 @@ repo sync -j8
 ## 7. manifest 收敛流程（全量基座 → 最小闭包）
 
 `manifests/bl-vela-sdk.xml` 当前以 **openvela trunk 全量基座**为默认来源（约 170 个
-project），但 `apps`/`nuttx` 固定到 Bouffalo Lab public fork 的已验证精确 SHA；
+project），但 `apps`/`nuttx` 跟随 Bouffalo Lab public fork 的受保护 `trunk`；
 `vendor/bouffalolab` 和独立只读的 `vendor/bouffalolab/drivers` 已接入。先保证清单可以
 fresh sync、完成 BL616CL 标准构建和运行回归，再逐步收敛。
 
@@ -186,7 +186,7 @@ public 仓 + github 标准 runner = 免费。重型全量编译/测试仍在内�
 
 ```
 manifests/
-  bl-vela-sdk.xml                   开发清单（openvela 基座 + 固定的 BL OS fork SHA）
+  bl-vela-sdk.xml                   开发清单（openvela 基座 + BL OS fork trunk）
   tags/
     bl-vela-sdk-trunk-5.5.1.xml     冻结快照样例（发版时脚本生成，钉 refs/tags/trunk-5.5）
 scripts/

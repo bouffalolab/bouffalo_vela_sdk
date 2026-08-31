@@ -10,7 +10,7 @@
   <project path=".claude" name=".claude" />
 
   <project path="apps" name="nuttx-apps" remote="bouffalo"
-           revision="a65c438bdbb0c74b311235f8940a5ceba2cedc68"
+           revision="trunk"
            upstream="refs/heads/trunk" dest-branch="refs/heads/trunk" />
   <project path="apps/benchmarks/coremark/coremark" name="apps_benchmarks_coremark" />
   <project path="apps/benchmarks/test-tlb/test-tlb" name="apps_benchmarks_test-tlb" />
@@ -138,7 +138,7 @@
   <project path="external/zblue/zblue" name="external_zblue" />
   <project path="external/zint/zint" name="external_zint" />
   <project path="nuttx" name="nuttx" remote="bouffalo"
-           revision="e431601576df3c4b0ed03320c13164ff2287ac67"
+           revision="trunk"
            upstream="refs/heads/trunk" dest-branch="refs/heads/trunk">
     <linkfile src="tools/build.sh" dest="build.sh" />
   </project>
