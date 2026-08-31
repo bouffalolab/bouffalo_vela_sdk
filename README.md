@@ -29,6 +29,8 @@
 ```
 github/open-vela/*                         OS 基座（小米 Vela，trunk-5.5 tag）
 github/bouffalolab/bouffalo_vela_sdk       ← 本仓：manifest + CI + 发版入口
+github/bouffalolab/nuttx                   OpenVela NuttX 的 public SDK 集成 fork
+github/bouffalolab/nuttx-apps              OpenVela apps 的 public SDK 集成 fork
 github/bouffalolab/vendor_bouffalolab      BL 适配层：芯片/板级/驱动/中间件/示例/工具（源码镜像）
 github/bouffalolab/bl_lhal                 寄存器级 HAL（源码，复用自 bouffalo_sdk）
 github/bouffalolab/bl_wireless             无线协议栈（★预编译库 .a，方案 A）
@@ -38,10 +40,10 @@ github/bouffalolab/bl_phyrf                PHY/RF 校准（★预编译库 .a，
 > **方案 A**：wireless / phyrf 不公开源码——在 BL 内部用 openvela 同款工具链编成 `.a`，
 > 只把库 + 公开头文件推到 github。详见 §5。
 
-> **⚠️ 现状（与本节"目标态"有差距）**：当前 `manifests/bl-vela-sdk.xml` 是 **openvela
-> trunk 全量基座的镜像**（≈170 个 project），BL 适配层 `vendor/bouffalolab` 已接入
-> （当前为 `bl616cl/bl616cldg` 脚手架，驱动源码待填充），lhal/wireless/phyrf 尚未接入。
-> 本节描述的是接入后的目标拓扑；收敛路径见 §7。
+> **当前状态**：`manifests/bl-vela-sdk.xml` 以 openvela trunk 全量基座为默认来源，
+> `nuttx`/`apps` 显式固定到 Bouffalo Lab public fork 的已验证精确 SHA；BL616CL chip、
+> Ai-M64L-32S-Kit board、LHAL wrapper 和只读 drivers project 已接入并完成标准构建与
+> 实板回归。无线预编译库仍按具体 SDK 版本独立冻结；收敛路径见 §7。
 > 两个 remote 用的是**相对路径**（`../open-vela/`、`../bouffalolab/`），
 > 即 open-vela 与 bouffalolab 必须与本清单仓位于同一 Git host 的同级命名空间下。
 
@@ -59,9 +61,9 @@ vendor_bouffalolab/
 └── LICENSE         Apache-2.0
 ```
 
-> chips/boards 由 kernel/arch 侧按 custom-dir 纳入；drivers/components/examples 由顶层
-> 一层 glob 自动发现；tools 不编入固件。构建走 cmake+Ninja，细节见仓内 `README.md`。
-> 当前为 `bl616cl/bl616cldg` 脚手架（ARM 占位），真实 RISC-V 移植与 lhal/wireless/phyrf 待接入。
+> chips/boards 由 kernel/arch 侧按 custom-dir 纳入；components/examples 由顶层一层
+> glob 自动发现；drivers 由显式 CMake wrapper 选择，tools 不编入固件。构建走
+> CMake+Ninja，细节见仓内 `README.md`。
 
 ---
 
@@ -87,12 +89,20 @@ repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
           -b release/trunk-5.5 \
           -m manifests/bl-vela-sdk.xml
 repo sync -j8
-# 编译（cmake+Ninja；--cmake 缺省即走 Make。路径/配置名以实际为准）
-./build.sh vendor/bouffalolab/boards/bl616cl/bl616cldg/configs/nsh --cmake -j8
+# repo checkout 会跳过 LFS smudge，构建前显式拉取 vendor 工具二进制
+git -C vendor/bouffalolab lfs pull bouffalo
+# BL616CL 标准构建入口（CMake + Ninja）
+python3 vendor/bouffalolab/bl_build.py build \
+  bl616cl/ai-m64l-32s-kit/configs/nsh -j14
 ```
-> 开发清单的 `default revision` 是 `trunk`（跟分支），所以"跟最新"即跟 openvela trunk。
-> **注意现状**：`vendor/bouffalolab` 已接入，但当前仅为 `bl616cl/bl616cldg` 脚手架
-> （ARM 占位，真实 chip 移植/驱动源码待填充），尚不能直接编出固件；lhal/wireless/phyrf 仍未接入。
+> 开发清单仍以 openvela `trunk` 作为普通 project 的默认基线；`apps` 和 `nuttx` 例外，
+> 由清单显式固定到 public 的 `bouffalolab/nuttx-apps`、`bouffalolab/nuttx` 精确 SHA，
+> 使 SDK 不被尚未合入的上游 PR 阻塞。每次推进这两个 SHA 都必须重新完成 fresh sync、
+> BL616CL 构建和运行回归。
+>
+> `repo` 为 project checkout 配置 `filter.lfs.*=--skip`，所以 `repo sync` 成功不代表
+> `vendor/bouffalolab` 的 LFS 文件已展开。缺少上述 `git lfs pull` 时，固件后处理工具仍是
+> LFS pointer，后处理阶段会失败；这不应记录成源码编译失败。
 
 ### 4.2 复现某个发版（冻结快照）
 ```bash
@@ -100,8 +110,12 @@ repo init -u git@github.com:bouffalolab/bouffalo_vela_sdk.git \
           -b bl-vela-sdk-trunk-5.5.1 \
           -m manifests/tags/bl-vela-sdk-trunk-5.5.1.xml
 repo sync -j8
-# 此时所有 project 钉死在发版时的具体 commit，bit-for-bit 可复现
 ```
+
+> `5.5.1` 是历史清单：它仍使用 `refs/tags/trunk-5.5`，且没有纳入当前
+> `vendor/bouffalolab`，不满足现行“逐 project 精确 SHA + 完整 BL project 集合”的
+> 冻结合同，不能据此声称当前 BL616CL SDK bit-for-bit 可复现。后续发版必须新建由
+> `repo manifest -r` 生成并完成 fresh sync/build 回归的 tag manifest；历史文件不修改。
 
 ### 4.3 下游产品消费（产品侧）
 产品侧在自己的 product manifest 中引用本 SDK 的 vendor tag，叠加业务码后发版。
@@ -140,14 +154,15 @@ repo sync -j8
 
 ## 7. manifest 收敛流程（全量基座 → 最小闭包）
 
-`manifests/bl-vela-sdk.xml` 当前是 **openvela trunk 全量基座的镜像**（≈170 个 project，
-`default revision = trunk`），BL 适配层中 `vendor/bouffalolab` 已接入（脚手架，`revision`
-继承默认 `trunk`），lhal/wireless/phyrf 仍待挂接。先保证「能像上游 openvela 一样 sync + 编」，再逐步收敛。
+`manifests/bl-vela-sdk.xml` 当前以 **openvela trunk 全量基座**为默认来源（约 170 个
+project），但 `apps`/`nuttx` 固定到 Bouffalo Lab public fork 的已验证精确 SHA；
+`vendor/bouffalolab` 和独立只读的 `vendor/bouffalolab/drivers` 已接入。先保证清单可以
+fresh sync、完成 BL616CL 标准构建和运行回归，再逐步收敛。
 
 ```
-1. 接入 BL 适配层：✅ 已放开 vendor/bouffalolab（bl616cl/bl616cldg 脚手架）；待挂上 lhal/wireless/phyrf 仓
-2. 放一个 BL616/BL618 的 defconfig
-3. repo sync 全量 → 编译，记录实际被引用到的 project
+1. 接入 BL 适配层：已接入 vendor/bouffalolab 与只读 drivers project
+2. 维护 BL616CL Ai-M64L-32S-Kit 的可复现 defconfig
+3. repo sync 全量 → LFS pull → BL616CL 编译和运行回归，记录实际被引用的 project
 4. 反向裁剪：删掉编译用不到的子系统
 5. 回到 3，迭代到能干净编出固件 → 剩下的就是真实最小闭包
 ```
@@ -171,7 +186,7 @@ public 仓 + github 标准 runner = 免费。重型全量编译/测试仍在内�
 
 ```
 manifests/
-  bl-vela-sdk.xml                   开发清单（openvela trunk 全量基座 + vendor/bouffalolab 脚手架）
+  bl-vela-sdk.xml                   开发清单（openvela 基座 + 固定的 BL OS fork SHA）
   tags/
     bl-vela-sdk-trunk-5.5.1.xml     冻结快照样例（发版时脚本生成，钉 refs/tags/trunk-5.5）
 scripts/
