@@ -92,7 +92,7 @@ repo sync -j8
 # repo checkout 会跳过 LFS smudge，构建前显式拉取 vendor 工具二进制
 git -C vendor/bouffalolab lfs pull bouffalo
 # BL616CL 标准构建入口（CMake + Ninja）
-python3 vendor/bouffalolab/bl_build.py build \
+vendor/bouffalolab/vela build \
   bl616cl/ai-m64l-32s-kit/configs/nsh -j14
 ```
 > 开发清单仍以 openvela `trunk` 作为普通 project 的默认基线；`apps` 和 `nuttx` 例外，

@@ -172,8 +172,7 @@
 
   <project path="vendor/bouffalolab" name="vendor_bouffalolab" remote="bouffalo">
     <linkfile src=".agents/skills/bl-module-reset" dest=".agents/skills/bl-module-reset" />
-    <linkfile src=".agents/skills/bl-module-reset" dest=".claude/skills/bl-module-reset" />
-    <linkfile src="bl_build.py" dest="bl_build.py" />
+    <linkfile src="vela" dest="vela" />
   </project>
   <project path="vendor/bouffalolab/drivers" name="bouffalo_drivers" remote="bouffalo" revision="master" />
 
